@@ -1,0 +1,7 @@
+---
+    - hosts: localhost
+      roles:
+        - splunk-server
+        - region1
+        #- region2
+        #- region3

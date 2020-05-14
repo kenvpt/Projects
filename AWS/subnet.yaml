@@ -1,0 +1,10 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Create subnet for database servers
+      ec2_vpc_subnet:
+        state: present
+        vpc_id: vpc-123456
+        cidr: 10.0.1.16/28
+        region: us-east-1
+    

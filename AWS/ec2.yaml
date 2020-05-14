@@ -1,0 +1,10 @@
+---
+- hosts: localhost
+  tasks: 
+    - ec2:
+        key_name: bastion_host
+        instance_type: t2.large
+        region: us-east-1
+        image: ami-0323c3dd2da7fb37d
+        count: 1
+        user_data: 

@@ -1,0 +1,19 @@
+---
+# vars file for region3
+
+vpc_name: "my_vpc"
+cidr_block: "10.0.0.0/16"
+region: "us-west-2" 
+#aws_access_key: 
+#aws_secret_key: 
+public_subnet_1_state: "present"
+public_subnet_1_cidr: "10.0.1.0/24"
+map_public: yes
+keypair_name: "my_keypair"
+key_material: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCePR8ri0dqhoHZNH92UrylsHA1hQSoI4LvthyJWv7gXGnspzJ3Qu9boiOcu7Btt7hBjJqsl9tm2oE6IGB9zE/G6Hp71eK3XlpuXE8Ibg5GVxqJHspiJ2PKO+JSur7mVXsHzGpGtQi+MvLySta3kWkmLJ4OHjGnP4+hG7wQCFI2mbLnUYr08KDSF2bS2bt0JwrrSCSs23sisiztXsgEvVE7HeLzMMu/hpjeWeXs8rFVajil1FQIR7N+AIZPj4aqtlYRmXm41vlDoYBqscGvudrHTJlA53eYZxO9Cin/GvZ1PwhSqrViFtssg66P+fsbAGy2Sl1VW7wzunHS6mUJma19 centos@ip-172-31-22-25.eu-west-2.compute.internal'
+instance_type: "t2.micro"
+image: "ami-0d6621c01e8c2de2c"
+volume_type: "gp2"
+volume_size: "8"
+security_grp_name: "security_80_22"
+region_copy: "us-east-2"

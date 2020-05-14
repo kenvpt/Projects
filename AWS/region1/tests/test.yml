@@ -1,0 +1,8 @@
+---
+- hosts: localhost
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: use this role
+      include_role:
+        name: /home/centos/ansible-iaac/AWS/common

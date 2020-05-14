@@ -1,0 +1,10 @@
+
+- hosts: localhost
+  tasks:
+    - name: create key pair using provided key_material
+      ec2_key:
+         name: bastion_host
+         region: us-east-1
+         #state: absent
+         key_material: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCePR8ri0dqhoHZNH92UrylsHA1hQSoI4LvthyJWv7gXGnspzJ3Qu9boiOcu7Btt7hBjJqsl9tm2oE6IGB9zE/G6Hp71eK3XlpuXE8Ibg5GVxqJHspiJ2PKO+JSur7mVXsHzGpGtQi+MvLySta3kWkmLJ4OHjGnP4+hG7wQCFI2mbLnUYr08KDSF2bS2bt0JwrrSCSs23sisiztXsgEvVE7HeLzMMu/hpjeWeXs8rFVajil1FQIR7N+AIZPj4aqtlYRmXm41vlDoYBqscGvudrHTJlA53eYZxO9Cin/GvZ1PwhSqrViFtssg66P+fsbAGy2Sl1VW7wzunHS6mUJma19 centos@ip-172-31-22-25.eu-west-2.compute.internal'
+
