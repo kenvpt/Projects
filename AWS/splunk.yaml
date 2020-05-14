@@ -1,0 +1,150 @@
+
+---
+  - name: splunk
+    hosts: localhost
+    become: true
+    become_method: sudo
+    ignore_errors: true
+    vars:
+      region: us-east-1
+    tasks:
+       #Creating VPC
+      - name: VPC
+        ec2_vpc_net:
+          name: my_vpc
+          cidr_block: "10.0.0.0/16"
+          region: us-east-1
+          aws_access_key:
+          aws_secret_key:
+          tags:
+            module: ec2_vpc_net
+        register: vpc
+
+      - name: debugging
+        debug: 
+          msg: "{{ vpc }}"
+      
+      #Creating PUBLIC SUBNET
+      
+      - name: public-subnet-1
+        ec2_vpc_subnet:
+          state: present
+          region: us-east-1
+          vpc_id: "{{ vpc.vpc.id }}"
+          cidr: "10.0.1.0/24"
+          map_public: yes
+        register: public_subnet_1
+      
+      - name: debugging
+        debug: 
+          msg: "{{ public_subnet_1 }}"
+      
+      
+      #Creating IGW
+      
+      - ec2_vpc_igw:
+          vpc_id: "{{ vpc.vpc.id }}"
+          state: present
+          region: us-east-1
+        register: igw
+      
+      
+      - name: debugging
+        debug: 
+          msg: "{{ igw }}"
+      
+      #Creating route table
+      
+      - name: Set up public subnet route table
+        ec2_vpc_route_table:
+          vpc_id: "{{ vpc.vpc.id }}"
+          region: us-east-1
+          tags:
+            Name: Public
+          subnets:
+            - "{{ public_subnet_1.subnet.id }}"
+          routes:
+            - dest: 0.0.0.0/0
+              gateway_id: "{{ igw.gateway_id }}"
+        register: public_route_table
+      
+      #Creating Security Group
+      - name: example using security group rule descriptions
+        ec2_group:
+          name: security
+          description: sg with rule descriptions
+          vpc_id: "{{ vpc.vpc.id }}"
+          region: us-east-1
+          rules:
+            - proto: tcp
+              ports:
+              - 80
+              - 22
+              cidr_ip: 0.0.0.0/0
+          
+      - name: create key pair using provided key_material
+        ec2_key:
+         name: my_keypair
+         region: us-east-1
+         key_material: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCePR8ri0dqhoHZNH92UrylsHA1hQSoI4LvthyJWv7gXGnspzJ3Qu9boiOcu7Btt7hBjJqsl9tm2oE6IGB9zE/G6Hp71eK3XlpuXE8Ibg5GVxqJHspiJ2PKO+JSur7mVXsHzGpGtQi+MvLySta3kWkmLJ4OHjGnP4+hG7wQCFI2mbLnUYr08KDSF2bS2bt0JwrrSCSs23sisiztXsgEvVE7HeLzMMu/hpjeWeXs8rFVajil1FQIR7N+AIZPj4aqtlYRmXm41vlDoYBqscGvudrHTJlA53eYZxO9Cin/GvZ1PwhSqrViFtssg66P+fsbAGy2Sl1VW7wzunHS6mUJma19 centos@ip-172-31-22-25.eu-west-2.compute.internal'
+
+      #creating ec2
+      - name: creating ec2
+        ec2:
+          key_name: my_keypair
+          instance_type: t2.micro
+          image: ami-0323c3dd2da7fb37d
+          wait: yes
+          region: us-east-1
+          wait_timeout: 500
+          volumes:
+            - device_name: /dev/xvda
+              volume_type: gp2
+              volume_size: 8
+          vpc_subnet_id: "{{ public_subnet_1.subnet.id }}"
+          assign_public_ip: yes
+          exact_count: 1
+          count_tag:
+            Name: splunk-forwarder
+
+# 1  sudo yum install wget unzip -y
+# 2  wget -O splunkforwarder-8.0.3-a6754d8441bf-Linux-x86_64.tgz 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=8.0.3&product=universalforwarder&filename=splunkforwarder-8.0.3-a6754d8441bf-Linux-x86_64.tgz&wget=true'
+# 3  tar xvzf splunkforwarder-8.0.3-a6754d8441bf-Linux-x86_64.tgz -C /opt
+# 4  sudo tar xvzf splunkforwarder-8.0.3-a6754d8441bf-Linux-x86_64.tgz -C /opt
+# 5  touch /opt/splunkforwarder/etc/system/local/user-seed.conf
+# 6  sudo touch /opt/splunkforwarder/etc/system/local/user-seed.conf
+# 7  sudo vi /opt/splunkforwarder/etc/system/local/user-seed.conf 
+# 8  ls
+# 9  cd /opt/splunkforwarder/bin/
+# 10  ls
+# 11  splunk start --agreement-license
+# 12  ./splunk start --agreement-license
+# 13  sudo ./splunk start --accept-license
+# 14  sudo ./splunk add  forward-server 3.10.235.194:9997 -auth admin:emr60scK34$
+# 15  sudo ./splunk add  forward-server 3.10.235.194:9997 
+# 16  sudo ./splunk add  forward-server 3.23.64.56:8000 -auth admin:password
+# 17  sudo ./splunk add  forward-server 3.23.64.56:8000 
+# 18  sudo ./splunk add  forward-server 3.23.64.56:8000 -auth admin:somepassword
+# 19  sudo ./splunk restart
+# 20  sudo ./splunk add  forward-server 3.23.64.56:8000 
+# 21  sudo ./splunk add  forward-server 3.23.64.56:8000 -auth admin:somepassword
+# 22  sudo ./splunk add  forward-server 3.23.64.56:8000 -auth admin:password
+# 23  sudo ./splunk add  forward-server 3.23.64.56:8000 -auth admin:somepasswrd
+# 24  sudo /opt/splunkforwarder/etc/system/local/user-seed.conf
+# 25  sudo vi /opt/splunkforwarder/etc/system/local/user-seed.conf
+# 26  sudo ./splunk add  forward-server 3.23.64.56:8000 -auth admin:somepassword
+# 27  sudo ./splunk add  forward-server 3.23.64.56:8000 -auth admin:password
+# 28  setenforce 0
+# 29  sudo setenforce 0
+# 30  sudo ./splunk add  forward-server 3.23.64.56:8000 -auth admin:password
+# 31  sudo ./splunk add  forward-server 3.23.64.56:8000 -auth admin:somepassword
+# 32  reboot
+# 33  sudo reboot
+# 34  sudo ./splunk add  forward-server 3.23.64.56:8000 -auth admin:password
+# 35  cd /opt/splunkforwarder/bin/
+# 36  sudo ./splunk add  forward-server 3.23.64.56:8000 -auth admin:password
+# 37   ./splunk add monitor /var/log/messages
+# 38  sudo  ./splunk add monitor /var/log/messages
+# 39  ./splunk enable boot-start
+# 40  sudo ./splunk enable boot-start
+# 41  sudo  ./splunk restart
